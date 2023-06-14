@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Shape to Basis",
     "author": "ゆづりん (yuzurin)",
-    "version": (1, 1, 0),
+    "version": (1, 1, 1),
     "blender": (3, 40, 0),
     "location": "View3D > Sidebar",
     "description": "Revers the 1 and 0 of the shapekey",
@@ -132,6 +132,9 @@ class S2bOperator(bpy.types.Operator):
 
 
     def execute(self, context):
+        # バックアップ情報の格納用
+        backup = {}
+
        #オブジェクトモードにする
         if bpy.context.mode != 'OBJECT':
             bpy.ops.object.mode_set(mode='OBJECT')
@@ -140,6 +143,13 @@ class S2bOperator(bpy.types.Operator):
         # アクティブなオブジェクトとシェイプキーを取得する
         obj = bpy.context.active_object
         shape_key = obj.active_shape_key
+
+        # Shape Key Lock (ピンアイコン) の状態を保存する
+        backup['show_only_shape_key'] = obj.show_only_shape_key
+
+        # Shape Key Lock をOFFにする
+        # -> 有効だと値の入れ替えが正常にできないため
+        obj.show_only_shape_key = False
 
         # アクティブなシェイプキーの名前を取得する
         active_shape_key_name = bpy.context.object.active_shape_key.name
@@ -228,6 +238,9 @@ class S2bOperator(bpy.types.Operator):
             bpy.ops.object.shape_key_move(type='UP')
             if bpy.context.object.active_shape_key_index == selected_shape_key_index:
                 break
+
+        # バックアップした情報を書き戻す
+        obj.show_only_shape_key = backup['show_only_shape_key']
             
         return { 'FINISHED' }
 
